@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Urdu letter-trainer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@500;700&family=Fraunces:ital,wght@0,600;1,500;1,600&family=Work+Sans:wght@400;500;600;700&display=swap">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--paper:#F6F0E2;--card:#FFFCF3;--ink:#2A1D14;--mute:#8A7256;--line:#E2D3A8;
+--indigo:#0E5C46;--indigo-ink:#F6EAC9;--gold:#C79A2E;--sage:#2F8F6D;--maroon:#A6335A;
+--shadow:rgba(42,29,20,.16);--ok:#2F8F6D;--bad:#A6335A;--acc:#C79A2E}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+--paper:#131A18;--card:#1B2422;--ink:#F0E6CE;--mute:#9DAAA2;--line:#2E3B37;
+--indigo:#5FBE9B;--indigo-ink:#0E1614;--gold:#E3B54F;--sage:#5FBE9B;--maroon:#E387A0;
+--shadow:rgba(0,0,0,.45);--ok:#5FBE9B;--bad:#E387A0;--acc:#E3B54F}}
+:root[data-theme="dark"]{
+--paper:#131A18;--card:#1B2422;--ink:#F0E6CE;--mute:#9DAAA2;--line:#2E3B37;
+--indigo:#5FBE9B;--indigo-ink:#0E1614;--gold:#E3B54F;--sage:#5FBE9B;--maroon:#E387A0;
+--shadow:rgba(0,0,0,.45);--ok:#5FBE9B;--bad:#E387A0;--acc:#E3B54F}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background-color:var(--paper);background-image:
+ linear-gradient(45deg,rgba(199,154,46,.07) 1px,transparent 1px),
+ linear-gradient(-45deg,rgba(14,92,70,.06) 1px,transparent 1px);
+ background-size:26px 26px;
+ color:var(--ink);font:15px/1.55 'Work Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+main{max-width:480px;margin:0 auto;padding:14px 16px 32px}
+header.top{display:flex;align-items:baseline;gap:10px;margin:6px 0 2px}
+h1{font:italic 600 26px/1.1 'Fraunces',Georgia,serif;margin:0;color:var(--ink);letter-spacing:.2px}
+h1 .mark{font-style:normal;color:var(--gold);margin-right:2px}
+.sub{color:var(--mute);margin:4px 0 14px;font-size:13.5px}
+nav{display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin;
+ -webkit-overflow-scrolling:touch;border-bottom:1px solid var(--line)}
+nav::-webkit-scrollbar{height:4px}
+nav button{flex:0 0 auto;padding:8px 13px;border:1px solid var(--line);background:transparent;color:var(--mute);
+ border-radius:999px;font:500 13px 'Work Sans',sans-serif;cursor:pointer;white-space:nowrap;transition:background .15s,color .15s,border-color .15s}
+nav button[aria-selected=true]{background:var(--indigo);color:var(--indigo-ink);border-color:var(--indigo);font-weight:600;box-shadow:0 0 0 2px var(--gold) inset}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px 20px 22px;text-align:center;
+ box-shadow:0 6px 20px -8px var(--shadow);position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;
+ background:linear-gradient(90deg,var(--indigo),var(--gold),var(--maroon))}
+.big{font:700 84px/1.3 'Noto Naskh Arabic',serif;direction:rtl;margin:6px auto 4px;display:inline-block;
+ padding:30px 36px 22px;position:relative;background:var(--paper);
+ border:2px solid var(--gold);border-radius:50% 50% 10px 10px/64px 64px 10px 10px;
+ box-shadow:inset 0 0 0 5px var(--card),inset 0 0 0 7px var(--gold)}
+.big::before{content:'';position:absolute;top:-7px;left:50%;transform:translateX(-50%);
+ width:9px;height:9px;border-radius:50%;background:var(--gold)}
+.info{min-height:60px;margin:14px 0 12px}
+.info b{font-size:19px;font-family:'Fraunces',serif;font-style:italic}
+.row{display:flex;gap:8px}
+.row button,.opt,.wide{flex:1;padding:13px;border-radius:11px;border:1px solid var(--line);background:var(--paper);
+ color:var(--ink);font:500 15px 'Work Sans',sans-serif;cursor:pointer;transition:border-color .15s,background .15s}
+.row button:active,.opt:active,.wide:active{transform:translateY(1px)}
+.pri{background:var(--indigo)!important;color:var(--gold)!important;border-color:var(--indigo)!important;font-weight:700}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.opt{font-size:18px}
+.opt.ar{font:700 36px/1.4 'Noto Naskh Arabic',serif}
+.opt.good{background:var(--sage)!important;color:#fff!important;border-color:var(--sage)!important}
+.opt.wrong{background:var(--maroon)!important;color:#fff!important;border-color:var(--maroon)!important}
+.msg{min-height:22px;margin:14px 0 0;font-weight:600;font-size:14px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.cell{background:var(--card);border:1px solid var(--line);border-radius:11px;padding:9px 4px;text-align:center}
+.cell .ar{font:700 30px/1.3 'Noto Naskh Arabic',serif}
+.bar{height:6px;border-radius:3px;background:var(--line);overflow:hidden;margin-top:5px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--indigo))}
+.small{font-size:13px;color:var(--mute)}
+button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.pn{font:italic 600 34px 'Fraunces',serif;margin:6px 0;color:var(--ink)}
+.cw{position:relative;margin:10px 0}
+canvas{width:100%;border:1px dashed var(--line);border-radius:11px;touch-action:none;background:var(--paper)}
+.gh{position:absolute;inset:0;display:none;align-items:center;justify-content:center;font:700 110px 'Noto Naskh Arabic',serif;color:var(--indigo);opacity:.35;pointer-events:none}
+.sp{border:0;background:none;font-size:19px;cursor:pointer}
+.ans{min-height:56px;border:1px solid var(--line);border-radius:11px;padding:10px;font:700 28px "Noto Naskh Arabic",serif;
+ display:flex;flex-wrap:wrap;gap:12px;margin:10px 0;background:var(--paper)}
+summary{cursor:pointer;font-weight:600;color:var(--indigo)}
+.fg{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:12px}
+.theme-btn{padding:13px 14px;border:1px solid var(--line);border-left:4px solid var(--gold);background:var(--card);
+ border-radius:10px;cursor:pointer;font:500 15px 'Work Sans',sans-serif;color:var(--ink);text-align:left;transition:background .15s}
+.theme-btn:active{background:var(--paper)}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{border:1px solid var(--line);padding:7px 8px;text-align:left}
+th{background:var(--paper);font-weight:600;color:var(--ink)}
+</style>
+</head>
+<body>
+<main>
+<header class="top"><h1><span class="mark">اردو</span> letter-trainer</h1></header>
+<p class="sub">Van letter tot lopende tekst — jouw pad door het Urdu-schrift</p>
+<nav role="tablist">
+<button role="tab" data-t="pad" aria-selected="true">Pad</button>
+<button role="tab" data-t="learn" aria-selected="false">Leren</button>
+<button role="tab" data-t="quiz" aria-selected="false">Quiz</button>
+<button role="tab" data-t="write" aria-selected="false">Schrijven</button>
+<button role="tab" data-t="forms" aria-selected="false">Vormen</button>
+<button role="tab" data-t="vowels" aria-selected="false">Klinkers</button>
+<button role="tab" data-t="words" aria-selected="false">Woorden</button>
+<button role="tab" data-t="sent" aria-selected="false">Zinnen</button>
+<button role="tab" data-t="themes" aria-selected="false">Thema's</button>
+<button role="tab" data-t="gram" aria-selected="false">Grammatica</button>
+<button role="tab" data-t="dial" aria-selected="false">Dialogen</button>
+<button role="tab" data-t="read" aria-selected="false">Lezen</button>
+<button role="tab" data-t="prog" aria-selected="false">Voortgang</button>
+</nav>
+<div id="view"></div>
+</main>
+<script>
+const R=`ا|alif|a / lange aa|klinkerdrager, rechte streep|1
+ب|be|b|1 punt onder|1
+پ|pe|p|3 punten onder|1
+ت|te|t|2 punten boven|1
+ٹ|Te|t (tong naar achteren)|als ت met klein ط-teken erboven|1
+ث|se|s|3 punten boven|1
+ج|jiim|dj|1 punt onder|2
+چ|che|tsj|3 punten onder|2
+ح|baRi he|h (diep)|geen punt|2
+خ|khe|ch (schrapend)|1 punt boven|2
+د|daal|d|geen punt|3
+ڈ|Daal|d (tong naar achteren)|als د met klein ط-teken|3
+ذ|zaal|z|als د met 1 punt boven|3
+ر|re|r (rollend)|geen punt|4
+ڑ|Re|r (tong geklapt)|als ر met klein ط-teken|4
+ز|ze|z|als ر met 1 punt boven|4
+ژ|zhe|zj (zoals in genie)|als ر met 3 punten boven|4
+س|siin|s|geen punt|5
+ش|shiin|sj|als س met 3 punten boven|5
+ص|suaad|s|geen punt|5
+ض|zuaad|z|als ص met 1 punt boven|5
+ط|toe|t|geen punt|6
+ظ|zoe|z|als ط met 1 punt boven|6
+ع|'ain|keelklank (keel vernauwen)|geen punt|6
+غ|ghain|gh (keel-r)|als ع met 1 punt boven|6
+ف|fe|f|1 punt boven|7
+ق|qaaf|q (diepe k uit de keel)|2 punten boven|7
+ک|kaaf|k|geen punt|7
+گ|gaaf|g|als ک met extra streepje|7
+ل|laam|l|geen punt|8
+م|miim|m|geen punt|8
+ن|nuun|n|1 punt boven|8
+و|vaao|v / oe / o|geen punt|8
+ہ|choTi he|h|geen punt|9
+ھ|do-chashmi he|maakt de klank ervoor geaspireerd (bh, kh)|verbindt altijd met een letter ervoor|9
+ء|hamza|korte klankstop|klein teken|9
+ی|choTi ye|j / ie|2 punten onder (aan het eind)|9
+ے|baRi ye|e / ej|lange staart, alleen aan het eind|9`;
+const L=R.split('\n').map(r=>{const[c,n,s,t,g]=r.split('|');return{c,n,s,t,g:+g}});
+const KEY='urdu-m1-v2',fmt=d=>d.toLocaleDateString('sv');
+let S={},M={};
+try{const j=JSON.parse(localStorage.getItem(KEY)||'null');if(j){S=j.s||{};M=j.m||{}}else{const o=JSON.parse(localStorage.getItem('urdu-m1-scores')||'{}');for(const c in o)S[c]={b:o[c]>=4?2:o[c]>=1?1:0,d:Date.now()}}}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify({s:S,m:M}))}catch(e){}};
+const IV=[0,6e5,864e5,2592e5,6048e5,13824e5];
+function grade(c,ok){const b=S[c]?S[c].b:0,nb=ok?Math.min(5,b+1):0;S[c]={b:nb,d:Date.now()+IV[nb]};
+ const t=fmt(new Date());if(M.day!==t){M.streak=M.day===fmt(new Date(Date.now()-864e5))?(M.streak||0)+1:1;M.day=t;M.n=0}M.n=(M.n||0)+1;save()}
+function next(skip,seenOnly){const now=Date.now(),seen=L.filter(l=>S[l.c]&&l.c!==skip);
+ const due=seen.filter(l=>S[l.c].d<=now).sort((a,b)=>S[a.c].d-S[b.c].d).slice(0,4);
+ if(due.length)return due[Math.floor(Math.random()*due.length)];
+ if(!seenOnly){const u=L.find(l=>!S[l.c]);if(u)return u}
+ return seen.sort((a,b)=>S[a.c].b-S[b.c].b)[0]||null}
+const shuffle=a=>a.map(x=>[Math.random(),x]).sort((a,b)=>a[0]-b[0]).map(x=>x[1]);
+const $=id=>document.getElementById(id),V=$('view');let last=null;
+const hasUr=()=>'speechSynthesis' in window&&speechSynthesis.getVoices().some(v=>/^ur/i.test(v.lang));
+const say=c=>{const u=new SpeechSynthesisUtterance(c);u.lang='ur-PK';speechSynthesis.speak(u)};
+const inf=l=>`<b>${l.n}</b> · klank: <b>${l.s}</b><br><span class="small">${l.t}</span>${hasUr()?` <button class="sp" onclick="say('${l.c}')">🔊</button>`:''}`;
+const empty='<div class="card">Begin eerst bij Leren: daar maak je kennis met de letters.</div>';
+
+function learn(){const l=next(last);last=l.c;const nw=!S[l.c];
+ V.innerHTML=`<div class="card">${nw?'<p class="small">Nieuwe letter</p>':''}<p class="big">${l.c}</p><div class="info" id="info">${nw?inf(l):'<span class="small">Noem eerst naam en klank in gedachten.</span>'}</div><div id="act"></div></div>`;
+ const a=$('act');
+ if(nw){a.innerHTML='<button class="wide pri" id="ok" style="width:100%">Onthouden</button>';$('ok').onclick=()=>{S[l.c]={b:0,d:Date.now()};save();learn()}}
+ else{a.innerHTML='<button class="wide pri" id="rv" style="width:100%">Toon antwoord</button>';$('rv').onclick=()=>{$('info').innerHTML=inf(l);a.innerHTML='<div class="row"><button id="no">Nog niet</button><button class="pri" id="yes">Wist ik</button></div>';$('no').onclick=()=>{grade(l.c,false);learn()};$('yes').onclick=()=>{grade(l.c,true);learn()}}}}
+
+function quiz(){const l=next(last,true);if(!l){V.innerHTML=empty;return}last=l.c;const toName=Math.random()<.5;
+ const o=shuffle([l,...L.filter(x=>x.c!==l.c).map(x=>[(x.g===l.g?0:1)+Math.random(),x]).sort((a,b)=>a[0]-b[0]).slice(0,3).map(x=>x[1])]);
+ V.innerHTML=`<div class="card">${toName?`<p class="big">${l.c}</p><p class="small">Wat is de naam van deze letter?</p>`:`<p class="pn">${l.n}</p><p class="small">klank: ${l.s}. Welke letter is dit?</p>`}<div class="opts">${o.map(x=>toName?`<button class="opt" data-c="${x.c}">${x.n}</button>`:`<button class="opt ar" data-c="${x.c}">${x.c}</button>`).join('')}</div><p class="msg" id="msg"></p><button class="wide pri" id="nx" style="display:none;width:100%;margin-top:8px">Volgende</button></div>`;
+ document.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{const ok=b.dataset.c===l.c;grade(l.c,ok);
+  document.querySelectorAll('.opt').forEach(x=>{x.disabled=true;if(x.dataset.c===l.c)x.classList.add('good')});if(!ok)b.classList.add('wrong');
+  $('msg').textContent=(ok?'Goed! ':'Nee. ')+`${l.c} = ${l.n}, klank ${l.s}`;$('msg').style.color=ok?'var(--ok)':'var(--bad)';$('nx').style.display='block';$('nx').onclick=quiz})}
+
+function pad(sub,title,ans,fs,done){V.innerHTML=`<div class="card"><p class="pn">${title}</p><p class="small">${sub}</p><div class="cw"><canvas id="cv" width="320" height="200"></canvas><div class="gh" id="gh" style="font-size:${fs}px">${ans}</div></div><div id="act" class="row"><button id="cl">Wissen</button><button class="pri" id="sh">Toon antwoord</button></div></div>`;
+ const cv=$('cv'),x=cv.getContext('2d');x.lineWidth=7;x.lineCap='round';x.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue('--ink').trim()||'#000';
+ const pt=e=>{const r=cv.getBoundingClientRect();return[(e.clientX-r.left)*cv.width/r.width,(e.clientY-r.top)*cv.height/r.height]};let d=false;
+ cv.onpointerdown=e=>{d=true;cv.setPointerCapture(e.pointerId);const[p,q]=pt(e);x.beginPath();x.moveTo(p,q)};
+ cv.onpointermove=e=>{if(!d)return;const[p,q]=pt(e);x.lineTo(p,q);x.stroke()};cv.onpointerup=()=>d=false;
+ $('cl').onclick=()=>x.clearRect(0,0,320,200);
+ $('sh').onclick=()=>{$('gh').style.display='flex';$('act').innerHTML='<button id="no">Niet goed</button><button class="pri" id="yes">Goed genoeg</button>';$('no').onclick=()=>done(false);$('yes').onclick=()=>done(true)}}
+function write(){const l=next(last,true);if(!l){V.innerHTML=empty;return}last=l.c;pad('klank: '+l.s+'. Schrijf de letter uit je hoofd.',l.n,l.c,120,ok=>{grade(l.c,ok);write()})}
+
+function nx2(items,k,skip){const now=Date.now(),seen=items.filter(i=>S[k(i)]&&k(i)!==skip);
+ const due=seen.filter(i=>S[k(i)].d<=now).sort((a,b)=>S[k(a)].d-S[k(b)].d).slice(0,4);
+ if(due.length)return due[Math.floor(Math.random()*due.length)];
+ const u=items.find(i=>!S[k(i)]&&k(i)!==skip);if(u)return u;
+ return seen.sort((a,b)=>S[k(a)].b-S[k(b)].b)[0]||items[0]}
+const J='\u200D',NC='ادڈذرڑزژوےء';
+const fm=l=>{const n=NC.includes(l.c);return{Los:l.c,Begin:n?null:l.c+J,Midden:n?null:J+l.c+J,Eind:J+l.c}};
+const fhtml=l=>`<div class="fg">${Object.entries(fm(l)).map(([k,v])=>`<div class="cell"><div class="ar">${v||'–'}</div><div class="small">${k}</div></div>`).join('')}</div>`+(NC.includes(l.c)?'<p class="small">Deze letter verbindt niet met de letter erna. Daarna begint een nieuwe vorm.</p>':'');
+let lf=null,lw=null;
+function forms(){const pool=L.filter(l=>S[l.c]);if(!pool.length){V.innerHTML=empty;return}
+ const l=nx2(pool,i=>'f'+i.c,lf);lf='f'+l.c;
+ if(!S[lf]){V.innerHTML=`<div class="card"><p class="small">Vormen van ${l.n} (begin, midden, eind)</p>${fhtml(l)}<button class="wide pri" id="ok" style="width:100%;margin-top:12px">Onthouden</button></div>`;$('ok').onclick=()=>{S[lf]={b:0,d:Date.now()};save();forms()};return}
+ const c=Object.values(fm(l)).filter(v=>v&&v!==l.c),v=c[Math.floor(Math.random()*c.length)];
+ const o=shuffle([l,...shuffle(L.filter(x=>x.c!==l.c)).slice(0,3)]);
+ V.innerHTML=`<div class="card"><p class="big">${v}</p><p class="small">Dit is een verbonden vorm. Welke letter?</p><div class="opts">${o.map(x=>`<button class="opt" data-c="${x.c}">${x.n}</button>`).join('')}</div><div id="rv"></div><button class="wide pri" id="nx" style="display:none;width:100%;margin-top:8px">Volgende</button></div>`;
+ document.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{const ok=b.dataset.c===l.c;grade(lf,ok);
+  document.querySelectorAll('.opt').forEach(x=>{x.disabled=true;if(x.dataset.c===l.c)x.classList.add('good')});if(!ok)b.classList.add('wrong');
+  $('rv').innerHTML=fhtml(l);$('nx').style.display='block';$('nx').onclick=forms})}
+
+const W=`کتاب|kitaab|boek
+پانی|paani|water
+نام|naam|naam
+کام|kaam|werk
+دن|din|dag
+رات|raat|nacht
+بات|baat|gesprek, zaak
+سب|sab|alles, iedereen
+اب|ab|nu
+تم|tum|jij
+ہم|hum|wij
+دل|dil|hart
+گھر|ghar|huis
+ہاتھ|haath|hand
+بہت|bahut|veel
+دوست|dost|vriend
+پیار|pyaar|liefde
+شام|shaam|avond
+صبح|subah|ochtend
+کل|kal|gisteren of morgen
+میں|main, mein|ik (of: in)
+آپ|aap|u
+وہ|vo|hij, zij, die
+یہ|ye|dit, deze
+ہے|hai|is
+ہیں|hain|zijn (ook beleefd)
+اور|aur|en
+نہیں|nahiin|niet, nee
+ہاں|haan|ja
+کیا|kyaa|wat
+کون|kaun|wie
+کہاں|kahaan|waar
+کب|kab|wanneer
+کیوں|kyon|waarom
+کیسے|kaise|hoe
+کتنا|kitnaa|hoeveel
+شکریہ|shukriya|dank u
+سلام|salaam|hallo, vrede
+کا|kaa|van
+کو|ko|aan, naar
+سے|se|van, met
+پر|par|op
+ایک|ek|een
+دو|do|twee
+تین|tiin|drie
+چار|chaar|vier
+پانچ|paanch|vijf
+سات|saat|zeven
+دس|das|tien
+ماں|maan|moeder
+باپ|baap|vader
+بھائی|bhaai|broer
+بہن|behen|zus
+بیٹا|beTaa|zoon
+بیٹی|beTii|dochter
+کرنا|karnaa|doen
+جانا|jaanaa|gaan
+آنا|aanaa|komen
+کھانا|khaanaa|eten
+پینا|piinaa|drinken
+دیکھنا|dekhnaa|kijken
+بولنا|bolnaa|spreken
+چاہیے|chaahiye|nodig
+اچھا|achchhaa|goed
+بڑا|baRaa|groot
+چھوٹا|chhoTaa|klein
+نیا|nayaa|nieuw
+روٹی|roTii|brood
+پیسہ|paisaa|geld
+آج|aaj|vandaag
+ٹھیک|Thiik|goed, in orde
+معاف کیجیے|maaf kiijie|sorry, excuseer
+خدا حافظ|khudaa haafiz|tot ziens
+السلام علیکم|as-salaam alaikum|vrede zij met u (groet)
+کہنا|kahnaa|zeggen
+سننا|sunnaa|horen, luisteren
+لکھنا|likhnaa|schrijven
+پڑھنا|paRhnaa|lezen
+سمجھنا|samajhnaa|begrijpen
+سونا|sonaa|slapen
+چلنا|chalnaa|lopen
+کھیلنا|khelnaa|spelen
+دینا|denaa|geven
+لینا|lenaa|nemen
+خوش|khush|blij
+بھوک|bhuuk|honger
+پیاس|pyaas|dorst
+بیمار|biimaar|ziek
+ڈاکٹر|DaakTar|dokter
+دکان|dukaan|winkel
+بازار|baazaar|markt
+قیمت|qiimat|prijs
+مہنگا|mahangaa|duur
+سستا|sastaa|goedkoop
+کپڑا|kapRaa|kleding, stof
+جوتا|juutaa|schoen
+دروازہ|darwaazaa|deur
+کھڑکی|khiRkii|raam
+میز|mez|tafel
+کرسی|kursii|stoel
+چائے|chaaye|thee
+دودھ|duudh|melk
+چینی|chiinii|suiker
+نمک|namak|zout
+سبزی|sabzii|groente
+پھل|phal|fruit
+سیب|seb|appel
+کیلا|kelaa|banaan
+آم|aam|mango
+گوشت|gosht|vlees
+چاول|chaawal|rijst
+سردی|sardii|koud
+گرمی|garmii|warm
+بارش|baarish|regen
+درخت|darakht|boom
+پھول|phuul|bloem
+کتا|kuttaa|hond
+بلی|billii|kat
+سیکھنا|siikhnaa|leren
+مدد کرنا|madad karnaa|helpen
+پوچھنا|puuchhnaa|vragen
+بتانا|bataanaa|vertellen
+سوچنا|sochnaa|denken
+جاننا|jaannaa|weten
+کھولنا|kholnaa|openen
+ہنسنا|hansnaa|lachen
+مشکل|mushkil|moeilijk
+آسان|aasaan|makkelijk
+خوبصورت|khuubsuurat|mooi
+تیز|tez|snel
+لمبا|lambaa|lang
+صاف|saaf|schoon
+امیر|amiir|rijk
+غریب|ghariib|arm
+لیکن|lekin|maar
+کیونکہ|kyunke|omdat
+بھی|bhii|ook
+صرف|sirf|alleen
+شاید|shaayad|misschien
+ہمیشہ|hameshaa|altijd
+اکثر|aksar|vaak
+پہلے|pehle|eerder, vroeger
+پھر|phir|dan, weer
+سیدھا|seedhaa|recht door
+بائیں|baayen|links
+دائیں|daayen|rechts
+قریب|qariib|dichtbij
+دیر|der|laat, vertraging
+عمر|umr|leeftijd
+شہر|shahr|stad
+زبان|zabaan|taal
+طالب علم|taalib ilm|student
+استاد|ustaad|leraar
+اسکول|iskuul|school
+سوال|savaal|vraag
+جواب|javaab|antwoord
+سرخ|surkh|rood
+نیلا|niilaa|blauw
+سبز|sabz|groen
+کالا|kaalaa|zwart
+سفید|safed|wit
+سر|sar|hoofd
+آنکھ|aankh|oog
+ہاتھ الگ|haath|hand
+دفتر|daftar|kantoor
+کمپیوٹر|kampyuuTar|computer
+فون|fon|telefoon
+موسم|mausam|weer
+ریل گاڑی|rel gaaRii|trein
+بس|bas|bus
+ہوائی جہاز|havaaii jahaaz|vliegtuig`.split('\n').map(r=>{const[w,t,m]=r.split('|');return{w,t,m}});
+function words(){const x=nx2(W,i=>'w'+i.w,lw),k=lw='w'+x.w;
+ if(!S[k]){V.innerHTML=`<div class="card"><p class="small">Nieuw woord</p><p class="big" style="font-size:72px">${x.w}</p><p><b>${x.t}</b> · ${x.m}</p><p class="small" dir="rtl">${[...x.w].join(' + ')}</p><button class="wide pri" id="ok" style="width:100%">Onthouden</button></div>`;$('ok').onclick=()=>{S[k]={b:0,d:Date.now()};save();words()};return}
+ if(Math.random()<.5){pad(x.t+' · schrijf het woord uit je hoofd',x.m,x.w,64,ok=>{grade(k,ok);words()});return}
+ const o=shuffle([x,...shuffle(W.filter(y=>y.w!==x.w)).slice(0,3)]);
+ V.innerHTML=`<div class="card"><p class="big" style="font-size:72px">${x.w}</p><p class="small">Wat betekent dit woord?</p><div class="opts">${o.map(y=>`<button class="opt" data-c="${y.w}" style="font-size:16px">${y.m}</button>`).join('')}</div><p class="msg" id="msg"></p><button class="wide pri" id="nx" style="display:none;width:100%;margin-top:8px">Volgende</button></div>`;
+ document.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{const ok=b.dataset.c===x.w;grade(k,ok);
+  document.querySelectorAll('.opt').forEach(z=>{z.disabled=true;if(z.dataset.c===x.w)z.classList.add('good')});if(!ok)b.classList.add('wrong');
+  $('msg').textContent=`${x.t} = ${x.m}`;$('nx').style.display='block';$('nx').onclick=words})}
+
+const dl={};
+function drill(items,p,q,a,x){const it=nx2(items,i=>p+i.id,dl[p]),k=dl[p]=p+it.id,big='style="font-size:72px"';
+ if(!S[k]){V.innerHTML=`<div class="card"><p class="small">Nieuw</p><div class="big" ${big}>${q(it)}</div><p><b>${a(it)}</b></p>${x(it)}<button class="wide pri" id="ok" style="width:100%;margin-top:12px">Onthouden</button></div>`;$('ok').onclick=()=>{S[k]={b:0,d:Date.now()};save();drill(items,p,q,a,x)};return}
+ const o=shuffle([it,...shuffle(items.filter(y=>y!==it)).slice(0,3)]);
+ V.innerHTML=`<div class="card"><div class="big" ${big}>${q(it)}</div><p class="small">Wat is dit?</p><div class="opts">${o.map(y=>`<button class="opt" data-c="${y.id}" style="font-size:15px">${a(y)}</button>`).join('')}</div><div id="rv"></div><button class="wide pri" id="nx" style="display:none;width:100%;margin-top:8px">Volgende</button></div>`;
+ document.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{const ok=+b.dataset.c===it.id;grade(k,ok);
+  document.querySelectorAll('.opt').forEach(z=>{z.disabled=true;if(+z.dataset.c===it.id)z.classList.add('good')});if(!ok)b.classList.add('wrong');
+  $('rv').innerHTML=`<p>${x(it)}</p>`;$('nx').style.display='block';$('nx').onclick=()=>drill(items,p,q,a,x)})}
+const VW=`\u064E|zabar|korte a|کَل|kal, gisteren of morgen
+\u0650|zer|korte i|کِتاب|kitaab, boek
+\u064F|pesh|korte u|گُل|gul, bloem
+\u0651|tashdid|verdubbelt de medeklinker|کُتّا|kuttaa, hond
+\u0652|jazm|geen klinker na de letter|مُشْک|mushk, muskus
+آ|alif madda|lange aa aan het begin|آم|aam, mango
+ں|noon ghunna|neusklank op de klinker ervoor|میں|main, ik
+ء|hamza|klinker volgt op klinker|کوئی|koii, iemand
+\u0670|khari zabar|lange aa zonder alif|عیسیٰ|Iisaa
+\u064B|do zabar|eindigt op -an (Arabische woorden)|فوراً|fauran, meteen
+ھ|do-chashmi he|ademstoot bij de letter ervoor|بھائی|bhaai, broer
+ا|alif|lange aa|کام|kaam, werk
+ی|choTi ye|lange ie|پیار|pyaar, liefde
+و|vaao|oe, o of au|دور|duur, ver
+ے|baRi ye|e of ai|کیسے|kaise, hoe`.split('\n').map((r,id)=>{const[m,n,s,w,t]=r.split('|');return{id,m,n,s,w,t}});
+const vq=v=>/[\u064B-\u0652\u0670]/.test(v.m)?'\u25CC'+v.m:v.m;
+function vowels(){drill(VW,'v',vq,v=>`${v.n}: ${v.s}`,v=>`<span class="small">Voorbeeld: <span style="font:700 28px 'Noto Naskh Arabic',serif">${v.w}</span> · ${v.t}</span>`)}
+const Z=[
+['Ik drink water','میں پانی پیتا ہوں','main paani piitaa hoon','Het werkwoord staat achteraan (SOV) en volgt het geslacht: man piitaa, vrouw piitii.'],
+['Dit is mijn huis','یہ میرا گھر ہے','ye meraa ghar hai','Meraa (mijn) past zich aan het woord erna aan: meraa ghar, merii kitaab.'],
+['Wat is uw naam?','آپ کا نام کیا ہے','aap kaa naam kyaa hai','Aap is beleefd "u". Kaa/kii/ke (van) komt na de bezitter.'],
+['Waar is hij?','وہ کہاں ہے','vo kahaan hai','Het vraagwoord staat vlak voor het werkwoord.'],
+['Ik ga naar huis','میں گھر جاتا ہوں','main ghar jaataa hoon','Zonder voorzetsel: ghar jaanaa is "naar huis gaan".'],
+['Dit boek is goed','یہ کتاب اچھی ہے','ye kitaab achchhii hai','Kitaab is vrouwelijk, dus achchhii (niet achchhaa).'],
+['Hoe gaat het met u?','آپ کیسے ہیں','aap kaise hain','Bij aap hoort hain (meervoudsvorm) uit beleefdheid.'],
+['Ik heb water nodig','مجھے پانی چاہیے','mujhe paani chaahiye','Behoefte druk je uit met mujhe ("aan mij"), niet met "ik".'],
+['Wat is dit?','یہ کیا ہے','ye kyaa hai','Kyaa betekent "wat".'],
+['Het gaat goed met mij','میں ٹھیک ہوں','main Thiik hoon','Hoon is "ben" bij main.'],
+['Ik eet brood','میں روٹی کھاتا ہوں','main roTii khaataa hoon','Khaanaa = eten. Man: khaataa, vrouw: khaatii.'],
+['Zij drinkt thee','وہ چائے پیتی ہے','vo chaaye piitii hai','Piinaa = drinken. Vrouwelijk onderwerp: piitii.'],
+['Wij gaan morgen','ہم کل جائیں گے','hum kal jaayenge','Toekomende tijd: werkwoordstam + gaa/ge/gii.'],
+['Hij is mijn broer','وہ میرا بھائی ہے','vo meraa bhaai hai','Bhaai = broer (mannelijk). Meraa = mijn (m.).'],
+['Zij is mijn zus','وہ میری بہن ہے','vo merii behen hai','Behen = zus (vrouwelijk). Merii = mijn (vr.).'],
+['Ik heb honger','مجھے بھوک لگی ہے','mujhe bhuuk lagii hai','Letterlijk: "aan mij is honger geraakt".'],
+['Ik heb dorst','مجھے پیاس لگی ہے','mujhe pyaas lagii hai','Zelfde patroon als bij honger.'],
+['Het is koud vandaag','آج سردی ہے','aaj sardii hai','Sardii = kou. Letterlijk: "vandaag is er kou".'],
+['Ik begrijp het niet','میں نہیں سمجھتا','main nahiin samajhtaa','Nahiin (niet) staat hier vóór het werkwoord, in de tegenwoordige tijd.'],
+['Spreekt u Urdu?','کیا آپ اردو بولتے ہیں','kyaa aap Urdu bolte hain','Kyaa vooraan maakt er een ja/nee-vraag van.'],
+['Hoeveel kost dit?','یہ کتنے کا ہے','ye kitne kaa hai','Kitne kaa = hoeveel (voor mannelijke woorden).'],
+['Ik wil dit kopen','میں یہ خریدنا چاہتا ہوں','main ye khariidnaa chaahtaa hoon','Chaahnaa = willen. Khariidnaa = kopen.'],
+['Ik kom uit Nederland','میں ہالینڈ سے ہوں','main Holland se hoon','Se = van, uit.'],
+['Ik wil graag thee','مجھے چائے چاہیے','mujhe chaaye chaahiye','Chaahiye = nodig hebben/willen.'],
+['Wat heeft u?','آپ کے پاس کیا ہے','aap ke paas kyaa hai','Paas = bij je hebben. Letterlijk: "wat is er bij u".'],
+['Het eten is lekker','کھانا مزیدار ہے','khaanaa maziidaar hai','Maziidaar = smakelijk.'],
+['Ik heb genoeg gegeten','میں نے کافی کھایا','main ne kaafii khaayaa','Overgankelijk werkwoord in verleden tijd: main ne.'],
+['Wilt u water?','کیا آپ پانی پئیں گے','kyaa aap paani paiyenge','Beleefd aanbod in de toekomende tijd.'],
+['Ik wil kip','مجھے مرغی چاہیے','mujhe murghii chaahiye','Murghii = kip (vrouwelijk woord).'],
+['Het is te zout','یہ بہت نمکین ہے','ye bahut namkiin hai','Namkiin = zout (bijvoeglijk).'],
+['Dank u voor het eten','کھانے کے لیے شکریہ','khaane ke liye shukriya','Ke liye = voor.'],
+['Waar is het toilet?','ٹوائلٹ کہاں ہے','Toilet kahaan hai','In dagelijks gebruik wordt vaak het Engelse leenwoord gebruikt.'],
+['Hoe kom ik bij het station?','اسٹیشن کیسے جاؤں','isTeishan kaise jaaun','Jaaun = ik zou gaan (beleefde/subjunctieve vorm).'],
+['Ga naar links','بائیں مڑیں','baayen muReN','MuRnaa = draaien. Baayen = links.'],
+['Ga naar rechts','دائیں مڑیں','daayen muReN','Daayen = rechts.'],
+['Ga rechtdoor','سیدھا جائیں','seedhaa jaayen','Seedhaa = recht door.'],
+['Waar is de bushalte?','بس اسٹاپ کہاں ہے','bas isTaap kahaan hai','Isstaap is een Engels leenwoord voor halte.'],
+['Hoe lang duurt het?','کتنا وقت لگے گا','kitnaa waqt lagegaa','Waqt = tijd. Lagegaa = zal duren.'],
+['Dat is te duur','یہ بہت مہنگا ہے','ye bahut mahangaa hai','Mahangaa = duur. Tegenovergestelde: sastaa (goedkoop).']
+].map((r,id)=>({id,nl:r[0],t:r[1].split(' '),tr:r[2],n:r[3]}));
+const G=`<details class="card" style="margin-top:12px;text-align:left"><summary>Grammatica-spiekbriefje</summary><ul class="small"><li>Woordvolgorde: onderwerp, object, werkwoord.</li><li>Achterzetsels in plaats van voorzetsels: ghar mein = "in huis".</li><li>Ka/kii/ke (van) volgt het geslacht van het bezette woord.</li><li>Het werkwoord volgt het geslacht: jaataa hoon (man), jaatii hoon (vrouw).</li><li>Aap = u, tum = jij (informeel).</li><li>Ja/nee-vraag: kyaa vooraan.</li></ul></details>`;
+let ls=null;
+function sent(){const z=nx2(Z,i=>'s'+i.id,ls);ls='s'+z.id;let tl=shuffle(z.t.map((w,i)=>({w,i}))),got=[],done=false;
+ const r=()=>{V.innerHTML=`<div class="card"><p class="pn" style="font-size:24px">${z.nl}</p><p class="small">Bouw de zin in het Urdu. Tik de woorden in leesrichting, beginnend rechts.</p><div class="ans" dir="rtl">${got.map(t=>`<span>${t.w}</span>`).join('')||'<span class="small">…</span>'}</div><div class="opts" dir="rtl">${tl.map(t=>`<button class="opt ar" data-i="${t.i}" style="font-size:26px">${t.w}</button>`).join('')}</div><div class="row" style="margin-top:8px" id="act">${done?'<button class="pri" id="nx">Volgende</button>':'<button id="cl">Wissen</button><button class="pri" id="ck">Controleer</button>'}</div><p class="msg" id="msg"></p></div>${G}`;
+  if(done)return $('nx').onclick=sent;
+  document.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{const t=tl.find(x=>x.i==b.dataset.i);got.push(t);tl=tl.filter(x=>x!==t);r()});
+  $('cl').onclick=()=>{tl=shuffle(z.t.map((w,i)=>({w,i})));got=[];r()};
+  $('ck').onclick=()=>{const ok=got.length===z.t.length&&got.every((t,j)=>t.w===z.t[j]);grade(ls,ok);done=true;r();
+   $('msg').innerHTML=(ok?'Goed!':'Nog niet. Juist:')+` <span style="font:700 26px 'Noto Naskh Arabic',serif">${z.t.join(' ')}</span><br><span class="small">${z.tr}<br>${z.n}</span>`;$('msg').style.color=ok?'var(--ok)':'var(--bad)'}};
+ r()}
+
+const THEMES={
+'Eten & drinken':['چائے','دودھ','چینی','نمک','سبزی','پھل','سیب','کیلا','آم','گوشت','چاول','پانی','روٹی'],
+'Familie':['ماں','باپ','بھائی','بہن','بیٹا','بیٹی'],
+'Winkelen':['دکان','بازار','قیمت','مہنگا','سستا','کپڑا','جوتا','پیسہ'],
+'Kleuren':['سرخ','نیلا','سبز','کالا','سفید'],
+'Route & vervoer':['سیدھا','بائیں','دائیں','قریب','دور','ریل گاڑی','بس','ہوائی جہاز','اسٹیشن'],
+'Huis':['گھر','دروازہ','کھڑکی','میز','کرسی','دفتر'],
+'School':['اسکول','کتاب','طالب علم','استاد','سوال','جواب','زبان'],
+'Gevoelens & lichaam':['خوش','بھوک','پیاس','بیمار','سر','آنکھ','ہاتھ','دل']
+};
+let curTheme=null,lt=null;
+function themePick(){V.innerHTML=`<div class="card"><p class="small">Kies een thema om te oefenen</p><div class="row" style="flex-wrap:wrap;gap:8px">${Object.keys(THEMES).map(t=>`<button class="theme-btn" data-t="${t}" style="flex:1 1 45%">${t}</button>`).join('')}</div></div>`;
+ document.querySelectorAll('.theme-btn').forEach(b=>b.onclick=()=>{curTheme=b.dataset.t;themeDrill()})}
+function themeDrill(){const items=W.filter(w=>THEMES[curTheme].includes(w.w));
+ const x=nx2(items,i=>'w'+i.w,lt),k=lt='w'+x.w;
+ const back='<button class="wide" id="bk" style="margin-top:10px;width:100%">← Andere thema</button>';
+ if(!S[k]){V.innerHTML=`<div class="card"><p class="small">${curTheme} · nieuw woord</p><p class="big" style="font-size:72px">${x.w}</p><p><b>${x.t}</b> · ${x.m}</p><button class="wide pri" id="ok" style="width:100%">Onthouden</button>${back}</div>`;$('ok').onclick=()=>{S[k]={b:0,d:Date.now()};save();themeDrill()};$('bk').onclick=themePick;return}
+ const o=shuffle([x,...shuffle(items.filter(y=>y.w!==x.w)).slice(0,3)]);
+ if(o.length<4){V.innerHTML=`<div class="card"><p class="small">Nog te weinig woorden in dit thema voor een quiz.</p>${back}</div>`;$('bk').onclick=themePick;return}
+ V.innerHTML=`<div class="card"><p class="big" style="font-size:72px">${x.w}</p><p class="small">${curTheme} · wat betekent dit?</p><div class="opts">${o.map(y=>`<button class="opt" data-c="${y.w}" style="font-size:16px">${y.m}</button>`).join('')}</div><p class="msg" id="msg"></p><button class="wide pri" id="nx" style="display:none;width:100%;margin-top:8px">Volgende</button>${back}</div>`;
+ $('bk').onclick=themePick;
+ document.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{const ok=b.dataset.c===x.w;grade(k,ok);
+  document.querySelectorAll('.opt').forEach(z=>{z.disabled=true;if(z.dataset.c===x.w)z.classList.add('good')});if(!ok)b.classList.add('wrong');
+  $('msg').textContent=`${x.t} = ${x.m}`;$('nx').style.display='block';$('nx').onclick=themeDrill})}
+
+const GRAMMAR=[
+{title:'Tegenwoordige tijd',
+explanation:'Het werkwoord bestaat uit een stam + تا/تی/تے (naar geslacht en aantal) + een vorm van ہونا. In de tegenwoordige tijd stemt het werkwoord af op het onderwerp.',
+table:[['Onderwerp','Mannelijk','Vrouwelijk'],
+['میں (ik)','کرتا ہوں','کرتی ہوں'],
+['تم (jij, informeel)','کرتے ہو','کرتی ہو'],
+['آپ / وہ (enkelvoud, beleefd/hij-zij)','کرتا ہے','کرتی ہے'],
+['ہم / آپ / وہ (meervoud)','کرتے ہیں','کرتی ہیں']],
+examples:[['میں پانی پیتا ہوں','main paani piitaa hoon','Ik drink water (man)'],
+['وہ کتاب پڑھتی ہے','vo kitaab paRhtii hai','Zij leest een boek'],
+['ہم گھر جاتے ہیں','hum ghar jaate hain','Wij gaan naar huis']],
+tip:'Stam = werkwoord zonder نا (کرنا → کر). Let op: تم neemt altijd de meervoudsvorm -تے/-تی + ہو, ook al bedoel je maar één persoon.',
+exercises:[
+{q:'Welke vorm hoort bij "ik (man) doe"?',opts:['کرتا ہوں','کرتی ہوں','کرتے ہیں','کرتی ہے'],ans:0,uitleg:'Man, main: کرتا + ہوں.'},
+{q:'Welke vorm hoort bij "zij (vr.) doet"?',opts:['کرتا ہے','کرتی ہے','کرتے ہیں','کرتی ہوں'],ans:1,uitleg:'Vrouwelijk, enkelvoud: کرتی + ہے.'},
+{q:'وہ روز روٹی ___ ہے (وہ = zij)',opts:['کھاتا','کھاتی','کھاتے','کھاتی ہوں'],ans:1,uitleg:'Het werkwoord stemt af op het onderwerp (زیج = zij), niet op روٹی: کھاتی ہے.'},
+{q:'ہم گھر ___ ہیں',opts:['جاتا','جاتی','جاتے','جاؤں'],ans:2,uitleg:'Meervoud: جاتے + ہیں.'},
+{q:'Hoe zeg je "jij leest"?',opts:['تم پڑھتا ہوں','تم پڑھتے ہو','تم پڑھتی ہے','تم پڑھتا ہے'],ans:1,uitleg:'Bij تم hoort altijd -تے/-تی + ہو.'}
+]},
+{title:'Verleden tijd',
+explanation:'Urdu heeft drie verleden tijden: eenmalig (perfectief), gewoonte (habitual) en voltooid (perfect). Bij overgankelijke werkwoorden in de perfectieve verleden tijd hoort نے (zie de volgende module).',
+table:[['Type','Vorm','Voorbeeld','Betekenis'],
+['Perfectief (eenmalig)','stam + ا/ی/ے','اس نے کھایا','Hij at (eenmalig)'],
+['Habitual (gewoonte)','stam+تا/تی/تے تھا/تھی/تھے','وہ روز کھاتا تھا','Hij at elke dag'],
+['Perfect (voltooid)','deelwoord + چکا/چکی ہے','وہ کھا چکا ہے','Hij heeft al gegeten']],
+examples:[['میں نے روٹی کھائی','main ne roTii khaaii','Ik at brood (روٹی vrouwelijk → کھائی)'],
+['وہ روز اسکول جاتا تھا','vo roz iskuul jaataa thaa','Hij ging elke dag naar school'],
+['ہم نے فلم دیکھی','hum ne film dekhii','Wij hebben de film gezien']],
+tip:'De habitual-verleden-tijd (met تھا) gebruikt geen نے, ook niet bij overgankelijke werkwoorden. نے hoort specifiek bij de perfectieve verleden tijd.',
+exercises:[
+{q:'Wanneer gebruik je نے?',opts:['Altijd in het verleden','Bij de habitual-verleden-tijd','Bij de perfectieve (eenmalige) verleden tijd van overgankelijke werkwoorden','Nooit'],ans:2,uitleg:'نے hoort bij de eenmalige (perfectieve) verleden tijd van overgankelijke werkwoorden.'},
+{q:'میں نے پانی ___',opts:['پیا','پی','پیے','پیتی'],ans:0,uitleg:'پانی is mannelijk: پیا.'},
+{q:'اس نے روٹی ___',opts:['کھایا','کھائی','کھائے','کھاتا'],ans:1,uitleg:'روٹی is vrouwelijk: کھائی.'},
+{q:'"Hij ging elke dag naar school" (gewoonte)',opts:['وہ اسکول گیا','وہ اسکول جاتا تھا','وہ اسکول جائے گا','وہ اسکول جاتا ہے'],ans:1,uitleg:'Gewoonte in het verleden: جاتا تھا, geen نے nodig.'},
+{q:'ہم نے فلم ___',opts:['دیکھا','دیکھی','دیکھے','دیکھتی'],ans:1,uitleg:'فلم is vrouwelijk: دیکھی.'}
+]},
+{title:'De نے-constructie (ergatief)',
+explanation:'In de perfectieve verleden tijd van een overgankelijk werkwoord krijgt het onderwerp نے. Het werkwoord stemt dan af op het lijdend voorwerp (object), niet op het onderwerp.',
+table:[['Situatie','Voorbeeld','Vertaling'],
+['Geen نے (onovergankelijk)','وہ آیا','Hij kwam'],
+['نے + vrouwelijk object','اس نے کتاب پڑھی','Hij las een boek (کتاب vr. → پڑھی)'],
+['نے + mannelijk object','اس نے خط لکھا','Hij schreef een brief (خط m. → لکھا)']],
+examples:[['میں نے چائے پی','main ne chaaye pii','Ik dronk thee (چائے is vrouwelijk)'],
+['انہوں نے گھر بنایا','unhon ne ghar banaayaa','Zij bouwden een huis (گھر is mannelijk)'],
+['بچے نے دودھ پیا','bachche ne duudh piyaa','Het kind dronk melk']],
+tip:'وہ (hij/zij) wordt اس vóór نے. Meervoud/beleefd وہ wordt انہوں. میں، تم en آپ veranderen niet: میں نے، تم نے، آپ نے.',
+exercises:[
+{q:'Waar stemt het werkwoord op af bij نے?',opts:['Op het onderwerp','Op het object','Op de tijd','Nergens op'],ans:1,uitleg:'Met نے stemt het werkwoord af op het lijdend voorwerp.'},
+{q:'اس نے کتاب ___',opts:['پڑھا','پڑھی','پڑھے','پڑھتا'],ans:1,uitleg:'کتاب is vrouwelijk: پڑھی.'},
+{q:'میں نے خط ___',opts:['لکھا','لکھی','لکھے','لکھتا'],ans:0,uitleg:'خط is mannelijk: لکھا.'},
+{q:'Hoe wordt وہ (hij) vóór نے?',opts:['وہ نے','اس نے','اسے نے','انہیں نے'],ans:1,uitleg:'وہ → اس vóór نے.'},
+{q:'"Zij (mv.) bouwden een huis"',opts:['وہ نے گھر بنایا','انہوں نے گھر بنایا','اس نے گھر بنایا','ان کو گھر بنایا'],ans:1,uitleg:'Meervoud وہ → انہوں vóór نے.'}
+]},
+{title:'Bezit en postposities',
+explanation:'Urdu gebruikt achterzetsels (postposities) in plaats van voorzetsels. کا/کی/کے (van) is de belangrijkste en past zich aan aan het woord dat erna komt, niet aan de bezitter.',
+table:[['Vorm','Gebruik','Voorbeeld'],
+['کا','vóór een mannelijk enkelvoudig woord','یہ احمد کا گھر ہے (dit is Ahmeds huis)'],
+['کی','vóór een vrouwelijk woord','یہ احمد کی کتاب ہے (dit is Ahmeds boek)'],
+['کے','vóór een mannelijk meervoud, of bij andere achterzetsels','احمد کے بچے (Ahmeds kinderen)'],
+['میں / پر / سے / کو','in / op / van-met / aan-naar','گھر میں (in huis), میز پر (op tafel)']],
+examples:[['یہ میری کتاب ہے','ye merii kitaab hai','Dit is mijn boek (کتاب vr. → میری)'],
+['وہ اسکول میں ہے','vo iskuul mein hai','Hij is op school'],
+['مجھے پانی چاہیے','mujhe paani chaahiye','Ik heb water nodig (letterlijk: aan mij)']],
+tip:'کا/کی/کے verbuigt naar het bezette woord: میرا بھائی (mijn broer, m.), میری بہن (mijn zus, vr.), میرے بھائی (mijn broers, mv.).',
+exercises:[
+{q:'یہ ___ گھر ہے (van Ahmed, گھر is mannelijk)',opts:['احمد کا','احمد کی','احمد کے','احمد کو'],ans:0,uitleg:'Mannelijk enkelvoud: کا.'},
+{q:'یہ ___ کتاب ہے (mijn, کتاب vrouwelijk)',opts:['میرا','میری','میرے','مجھے'],ans:1,uitleg:'Vrouwelijk: میری.'},
+{q:'Wat betekent میز پر؟',opts:['onder de tafel','naast de tafel','op de tafel','in de tafel'],ans:2,uitleg:'پر = op.'},
+{q:'"Ik heb ... nodig" gebruikt welk woord voor "ik"?',opts:['میں','مجھے','میرا','مجھ'],ans:1,uitleg:'چاہیے-constructies gebruiken مجھے ("aan mij"), niet میں.'}
+]},
+{title:'Vraagvorming',
+explanation:'Een ja/nee-vraag maak je door کیا vooraan te zetten. Vraagwoorden (کیا، کون، کہاں، کب، کیوں، کیسے) staan meestal vlak vóór het werkwoord.',
+table:[['Vraagwoord','Betekenis'],['کیا','wat / (maakt ja-nee-vraag)'],['کون','wie'],['کہاں','waar'],['کب','wanneer'],['کیوں','waarom'],['کیسے','hoe']],
+examples:[['کیا آپ اردو بولتے ہیں','kyaa aap Urdu bolte hain','Spreekt u Urdu?'],
+['وہ کہاں ہے','vo kahaan hai','Waar is hij?'],
+['آپ کب آئیں گے','aap kab aayenge','Wanneer komt u?']],
+tip:'کیا aan het begin van een zin verandert een bewering in een ja/nee-vraag, zonder verder iets aan de woordvolgorde te wijzigen.',
+exercises:[
+{q:'Hoe maak je van "آپ اردو بولتے ہیں" een ja/nee-vraag?',opts:['کیا ervoor zetten','Vraagteken toevoegen','Woordvolgorde omdraaien','Werkwoord vooraan zetten'],ans:0,uitleg:'کیا vooraan volstaat.'},
+{q:'"Waar" in het Urdu is:',opts:['کب','کیوں','کہاں','کون'],ans:2,uitleg:'کہاں = waar.'},
+{q:'وہ ___ ہے (wie is hij)',opts:['کیا','کون','کہاں','کیسے'],ans:1,uitleg:'کون = wie.'},
+{q:'"Waarom" in het Urdu is:',opts:['کیوں','کیسے','کتنا','کب'],ans:0,uitleg:'کیوں = waarom.'}
+]},
+{title:'Ontkenning',
+explanation:'نہیں (niet/nee) staat meestal vóór het werkwoord. In de tegenwoordige en verleden tijd kan نہیں ook de vorm van ہونا laten vervallen.',
+table:[['Bevestigend','Ontkennend'],
+['وہ جاتا ہے (hij gaat)','وہ نہیں جاتا (hij gaat niet)'],
+['میں نے دیکھا (ik zag)','میں نے نہیں دیکھا (ik zag niet)'],
+['یہ اچھا ہے (dit is goed)','یہ اچھا نہیں ہے (dit is niet goed)']],
+examples:[['مجھے پسند نہیں','mujhe pasand nahiin','Ik hou er niet van'],
+['وہ نہیں آیا','vo nahiin aayaa','Hij is niet gekomen'],
+['یہ ٹھیک نہیں ہے','ye Thiik nahiin hai','Dit is niet goed']],
+tip:'نہیں staat vlak vóór het (hoofd)werkwoord, niet aan het einde van de zin zoals in het Nederlands.',
+exercises:[
+{q:'"Hij gaat niet" is:',opts:['وہ جاتا نہیں ہے','وہ نہیں جاتا','نہیں وہ جاتا ہے','وہ جاتا ہے نہیں'],ans:1,uitleg:'نہیں staat vóór het werkwoord: وہ نہیں جاتا.'},
+{q:'میں نے ___ دیکھا (ik zag het niet)',opts:['نہیں','ہاں','بھی','صرف'],ans:0,uitleg:'نہیں = niet.'},
+{q:'Waar staat نہیں meestal in de zin?',opts:['Aan het begin','Aan het eind','Vlak vóór het werkwoord','Na het onderwerp altijd'],ans:2,uitleg:'Vlak vóór het (hoofd)werkwoord.'}
+]},
+{title:'Schuine naamval',
+explanation:'Vóór postposities (کا، کو، میں، پر، سے، کے لیے, enz.) veranderen sommige zelfstandige naamwoorden van vorm — dit heet de schuine naamval. Vooral mannelijke woorden die op ا eindigen veranderen (naar ے).',
+table:[['Rechte vorm','Schuine vorm','Voorbeeld'],
+['لڑکا (jongen)','لڑکے','لڑکے کو دو (geef het aan de jongen)'],
+['گھر (huis)','گھر (blijft)','گھر میں (in huis)'],
+['کتاب (boek, vr.)','کتاب (blijft)','کتاب کے لیے (voor het boek)'],
+['لڑکے (jongens, mv.)','لڑکوں','لڑکوں سے (van de jongens)']],
+examples:[['لڑکے کو دو','laRke ko do','Geef het aan de jongen (لڑکا → لڑکے vóór کو)'],
+['گھر میں کوئی نہیں','ghar mein koii nahiin','Er is niemand in huis'],
+['لڑکوں کے ساتھ','laRkon ke saath','Met de jongens (meervoud + کے ساتھ)']],
+tip:'Alleen mannelijke woorden op ا (zoals لڑکا) veranderen in het enkelvoud. Vrouwelijke woorden en de meeste andere mannelijke woorden blijven in het enkelvoud gelijk; het meervoud krijgt voor postposities vaak -وں.',
+exercises:[
+{q:'لڑکا (jongen) wordt vóór کو:',opts:['لڑکا','لڑکے','لڑکوں','لڑکی'],ans:1,uitleg:'Mannelijk op ا verandert naar ے: لڑکے کو.'},
+{q:'___ میں کوئی نہیں (huis)',opts:['گھر','گھرے','گھروں','گھری'],ans:0,uitleg:'گھر verandert niet in het enkelvoud.'},
+{q:'Meervoud لڑکے (jongens) wordt vóór سے:',opts:['لڑکے','لڑکا','لڑکوں','لڑکیوں'],ans:2,uitleg:'Mannelijk meervoud vóór een postpositie: لڑکوں.'},
+{q:'Welke woorden veranderen in de schuine naamval (enkelvoud)?',opts:['Alle woorden','Alleen vrouwelijke woorden','Mannelijke woorden die op ا eindigen','Geen woorden'],ans:2,uitleg:'Alleen mannelijke woorden op ا, zoals لڑکا → لڑکے.'}
+]},
+{title:'Meervoudsvorming',
+explanation:'Het meervoud hangt af van geslacht en de laatste letter van het woord.',
+table:[['Type','Enkelvoud','Meervoud'],
+['Mannelijk op ا','لڑکا (jongen)','لڑکے'],
+['Mannelijk, overig','گھر (huis)','گھر (blijft gelijk)'],
+['Vrouwelijk op ی','لڑکی (meisje)','لڑکیاں'],
+['Vrouwelijk, overig','کتاب (boek)','کتابیں']],
+examples:[['یہ لڑکے ہیں','ye laRke hain','Dit zijn jongens'],
+['یہ لڑکیاں ہیں','ye laRkiyaan hain','Dit zijn meisjes'],
+['میری کتابیں کہاں ہیں','merii kitaaben kahaan hain','Waar zijn mijn boeken?']],
+tip:'Veel mannelijke woorden die niet op ا eindigen (zoals گھر) veranderen niet van vorm; je herkent het meervoud dan aan het werkwoord (ہیں) of een telwoord.',
+exercises:[
+{q:'لڑکا (jongen) in het meervoud:',opts:['لڑکا','لڑکے','لڑکیاں','لڑکوں'],ans:1,uitleg:'Gewone meervoudsvorm: لڑکے (لڑکوں is de schuine vorm, voor postposities).'},
+{q:'لڑکی (meisje) in het meervoud:',opts:['لڑکیاں','لڑکے','لڑکیوں','لڑکی'],ans:0,uitleg:'Vrouwelijk op ی: لڑکیاں.'},
+{q:'کتاب (boek) in het meervoud:',opts:['کتابیں','کتابے','کتابوں','کتابیاں'],ans:0,uitleg:'Vrouwelijk, overig: کتابیں.'},
+{q:'گھر (huis) in het meervoud:',opts:['گھر (blijft gelijk)','گھرے','گھریں','گھروں'],ans:0,uitleg:'Veel mannelijke woorden zonder ا-einde veranderen niet.'}
+]},
+{title:'Gebiedende wijs',
+explanation:'Urdu heeft drie beleefdheidsniveaus, afhankelijk van welk woord voor "jij/u" erbij past.',
+table:[['Niveau','Vorm','Voorbeeld','Betekenis'],
+['Zeer informeel (تُو)','stam','جا','Ga (grof, alleen intiem)'],
+['Informeel (تم)','stam + و','جاؤ','Ga (onder vrienden/familie)'],
+['Beleefd (آپ)','stam + یں','جائیں','Gaat u / ga (beleefd, altijd veilig)']],
+examples:[['بیٹھیں','baiThen','Gaat u zitten (beleefd)'],
+['سنو','suno','Luister (informeel, تم)'],
+['یہاں آئیں','yahaan aayen','Komt u hier (beleefd)']],
+tip:'Gebruik in het begin altijd de آپ-vorm (stam + یں): die is nooit onbeleefd en werkt vrijwel overal.',
+exercises:[
+{q:'Beleefde vorm van جانا (gaan):',opts:['جا','جاؤ','جائیں','جاتا'],ans:2,uitleg:'آپ-vorm: stam + یں → جائیں.'},
+{q:'تم-vorm van سننا (luisteren):',opts:['سن','سنو','سنیں','سنتا'],ans:1,uitleg:'تم-vorm: stam + و → سنو.'},
+{q:'Welke vorm gebruik je het veiligst tegen onbekenden?',opts:['تُو-vorm','تم-vorm','آپ-vorm (stam + یں)','Geen van deze'],ans:2,uitleg:'De آپ-vorm is altijd beleefd en veilig.'},
+{q:'Beleefd "kom hier" is:',opts:['یہاں آ','یہاں آؤ','یہاں آئیں','یہاں آتا'],ans:2,uitleg:'آئیں = beleefde gebiedende wijs van آنا.'}
+]},
+{title:'Bijvoeglijke naamwoorden',
+explanation:'Bijvoeglijke naamwoorden die op ا eindigen (zoals اچھا، بڑا، چھوٹا، نیا) zijn veranderlijk: ze passen zich aan het geslacht en getal van het zelfstandig naamwoord aan. De meeste andere (vaak Perzische of Arabische leenwoorden, zoals خوبصورت، مشکل) zijn onveranderlijk.',
+table:[['Type','Mannelijk enk.','Vrouwelijk enk.','Mannelijk mv.'],
+['Veranderlijk (op ا)','اچھا (goed)','اچھی','اچھے'],
+['Onveranderlijk','خوبصورت (mooi)','خوبصورت','خوبصورت']],
+examples:[['اچھا لڑکا','achchhaa laRkaa','Goede jongen (m.)'],
+['اچھی لڑکی','achchhii laRkii','Goed meisje (vr.)'],
+['خوبصورت گھر','khuubsuurat ghar','Mooi huis (verandert niet)']],
+tip:'نیا (nieuw) is een bekende uitzondering: نیا (m.) wordt نئی (vr.) en نئے (mv.), met een extra ہمزہ-klank in plaats van de gewone -ی/-ے.',
+exercises:[
+{q:'اچھا (goed) bij een vrouwelijk woord wordt:',opts:['اچھا','اچھی','اچھے','اچھیں'],ans:1,uitleg:'Veranderlijk bijvoeglijk naamwoord + vrouwelijk: اچھی.'},
+{q:'بڑا (groot) bij mannelijk meervoud wordt:',opts:['بڑا','بڑی','بڑے','بڑوں'],ans:2,uitleg:'Mannelijk meervoud: بڑے.'},
+{q:'خوبصورت (mooi) bij een vrouwelijk woord:',opts:['خوبصورتی','خوبصورت (blijft gelijk)','خوبصورتہ','خوبصورتیں'],ans:1,uitleg:'Onveranderlijke bijvoeglijke naamwoorden blijven altijd gelijk.'},
+{q:'___ کتاب (nieuw boek, کتاب is vrouwelijk)',opts:['نیا','نئی','نئے','نیے'],ans:1,uitleg:'نیا is onregelmatig: vrouwelijk wordt نئی.'}
+]}
+];
+let gm=null,gx=0;
+function gramList(){V.innerHTML=`<div class="card"><p class="small">${GRAMMAR.length} modules — kies er een</p><div class="row" style="flex-wrap:wrap;gap:8px">${GRAMMAR.map((g,i)=>`<button class="theme-btn" data-i="${i}" style="flex:1 1 100%;text-align:left">${i+1}. ${g.title}</button>`).join('')}</div><p class="small" style="margin-top:10px">Alle 10 grammaticamodules zijn nu beschikbaar.</p></div>`;
+ document.querySelectorAll('.theme-btn').forEach(b=>b.onclick=()=>{gm=+b.dataset.i;gx=0;gramShow()})}
+function gramShow(){const g=GRAMMAR[gm];
+ V.innerHTML=`<div class="card" style="text-align:left"><p class="pn" style="font-size:22px;text-align:center">${g.title}</p><p>${g.explanation}</p>
+ <div style="overflow-x:auto"><table>${g.table.map((r,i)=>`<tr>${r.map(c=>i===0?`<th>${c}</th>`:`<td>${c}</td>`).join('')}</tr>`).join('')}</table></div>
+ <p class="small" style="margin-top:10px"><b>Voorbeelden</b></p>
+ ${g.examples.map(e=>`<p style="margin:4px 0"><span style="font:600 22px 'Noto Naskh Arabic',serif" dir="rtl">${e[0]}</span><br><span class="small">${e[1]} — ${e[2]}</span></p>`).join('')}
+ <p class="small" style="margin-top:8px"><b>Tip:</b> ${g.tip}</p>
+ <button class="wide pri" id="go" style="width:100%;margin-top:12px">Oefenen (${g.exercises.length} vragen)</button>
+ <button class="wide" id="bk" style="width:100%;margin-top:6px">← Terug naar overzicht</button></div>`;
+ $('go').onclick=()=>{gx=0;gramEx()};$('bk').onclick=gramList}
+function gramEx(){const g=GRAMMAR[gm];if(gx>=g.exercises.length){V.innerHTML=`<div class="card"><p>Klaar! Je hebt alle vragen van "${g.title}" gehad.</p><button class="wide pri" id="bk" style="width:100%">← Terug naar overzicht</button></div>`;$('bk').onclick=gramList;return}
+ const e=g.exercises[gx],k='g'+gm+'-'+gx;
+ V.innerHTML=`<div class="card"><p class="small">${g.title} · vraag ${gx+1}/${g.exercises.length}</p><p style="font:600 20px 'Noto Naskh Arabic',serif;direction:rtl" dir="rtl">${e.q}</p><div class="opts">${e.opts.map((o,i)=>`<button class="opt" data-i="${i}" style="font-size:18px">${o}</button>`).join('')}</div><p class="msg" id="msg"></p><button class="wide pri" id="nx" style="display:none;width:100%;margin-top:8px">Volgende</button></div>`;
+ document.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{const ok=+b.dataset.i===e.ans;grade(k,ok);
+  document.querySelectorAll('.opt').forEach((z,i)=>{z.disabled=true;if(i===e.ans)z.classList.add('good')});if(!ok)b.classList.add('wrong');
+  $('msg').textContent=e.uitleg;$('msg').style.color=ok?'var(--ok)':'var(--bad)';$('nx').style.display='block';$('nx').onclick=()=>{gx++;gramEx()}})}
+
+const DIALOGUES=[
+{id:0,title:'Kennismaken',situation:'Twee mensen ontmoeten elkaar voor het eerst.',
+lines:[['A','السلام علیکم','as-salaam alaikum','Vrede zij met u'],
+['B','وعلیکم السلام','va alaikum as-salaam','En met u zij vrede'],
+['A','آپ کا نام کیا ہے','aap kaa naam kyaa hai','Hoe heet u?'],
+['B','میرا نام احمد ہے، آپ کا نام کیا ہے','meraa naam Ahmad hai, aap kaa naam kyaa hai','Ik heet Ahmad. Hoe heet u?'],
+['A','میرا نام فاطمہ ہے','meraa naam Faatimah hai','Ik heet Fatima'],
+['B','آپ سے مل کر خوشی ہوئی','aap se mil kar khushii huii','Aangenaam kennis te maken']],
+questions:[{q:'Hoe groet persoon A?',opts:['خدا حافظ','السلام علیکم','شکریہ','معاف کیجیے'],ans:1},
+{q:'Hoe heet persoon B?',opts:['فاطمہ','احمد','علی','حسن'],ans:1},
+{q:'Hoe heet persoon A?',opts:['فاطمہ','احمد','عائشہ','زینب'],ans:0}]},
+{id:1,title:'In de winkel',situation:'Je koopt een overhemd op de markt.',
+lines:[['A','السلام علیکم، یہ قمیص کتنی کی ہے','as-salaam alaikum, ye qamiis kitnii kii hai','Vrede zij met u. Hoeveel kost dit overhemd?'],
+['B','یہ پانچ سو روپے کی ہے','ye paanch sau rupaye kii hai','Het kost vijfhonderd roepies'],
+['A','یہ بہت مہنگی ہے','ye bahut mahangii hai','Dat is te duur'],
+['B','آپ کتنے میں لیں گے','aap kitne mein lenge','Voor hoeveel wilt u het nemen?'],
+['A','چار سو روپے میں','chaar sau rupaye mein','Voor vierhonderd roepies'],
+['B','ٹھیک ہے، لے لیں','Thiik hai, le lein','Oké, neem het maar']],
+questions:[{q:'Hoeveel kost het overhemd eerst?',opts:['چار سو','پانچ سو','تین سو','دو سو'],ans:1},
+{q:'Voor hoeveel koopt A het uiteindelijk?',opts:['چار سو','پانچ سو','تین سو','چھ سو'],ans:0},
+{q:'Wat betekent "یہ بہت مہنگی ہے"؟',opts:['Het is heel mooi','Het is te duur','Het is goedkoop','Ik neem het'],ans:1}]},
+{id:2,title:'In een restaurant',situation:'Je bestelt eten in een restaurant.',
+lines:[['A','آپ کے پاس کیا ہے','aap ke paas kyaa hai','Wat heeft u?'],
+['B','ہمارے پاس روٹی، دال، چاول اور سبزی ہے','hamaare paas roTii, daal, chaawal aur sabzii hai','Wij hebben brood, linzen, rijst en groente'],
+['A','مجھے دال اور چاول چاہیے','mujhe daal aur chaawal chaahiye','Ik wil graag linzen en rijst'],
+['B','کیا آپ چائے پئیں گے','kyaa aap chaaye paiyenge','Wilt u thee?'],
+['A','جی ہاں، ایک کپ چائے','jii haan, ek kap chaaye','Ja graag, een kop thee'],
+['B','ٹھیک ہے','Thiik hai','Prima']],
+questions:[{q:'Wat bestelt persoon A?',opts:['روٹی اور دال','دال اور چاول','چاول اور سبزی','روٹی اور سبزی'],ans:1},
+{q:'Wat drinkt A?',opts:['پانی','دودھ','چائے','niets'],ans:2},
+{q:'Hoeveel kopjes thee vraagt A?',opts:['دو','تین','ایک','چار'],ans:2}]},
+{id:3,title:'De weg vragen',situation:'Je vraagt de weg naar het station.',
+lines:[['A','معاف کیجیے، اسٹیشن کہاں ہے','maaf kiijie, isTeishan kahaan hai','Pardon, waar is het station?'],
+['B','سیدھا جائیں، پھر بائیں مڑیں','seedhaa jaayen, phir baayen muRen','Ga rechtdoor, dan linksaf'],
+['A','کیا یہ دور ہے','kyaa ye duur hai','Is het ver?'],
+['B','نہیں، قریب ہے، پانچ منٹ','nahiin, qariib hai, paanch minuT','Nee, het is dichtbij, vijf minuten'],
+['A','بہت شکریہ','bahut shukriya','Heel erg bedankt'],
+['B','کوئی بات نہیں','koii baat nahiin','Geen probleem']],
+questions:[{q:'Wat moet je doen volgens B?',opts:['Rechtdoor, dan links','Rechtdoor, dan rechts','Links, dan rechtdoor','Alleen rechtdoor'],ans:0},
+{q:'Is het station ver?',opts:['Ja, heel ver','Nee, dichtbij','Onbekend','Ja, een uur'],ans:1},
+{q:'Hoe lang duurt het volgens B?',opts:['Twee minuten','Vijf minuten','Tien minuten','Een uur'],ans:1}]}
+];
+let dd=null,dqi=0;
+function dialList(){V.innerHTML=`<div class="card"><p class="small">${DIALOGUES.length} dialogen — kies er een</p><div class="row" style="flex-wrap:wrap;gap:8px">${DIALOGUES.map(d=>`<button class="theme-btn" data-i="${d.id}" style="flex:1 1 100%;text-align:left">${d.id+1}. ${d.title}</button>`).join('')}</div></div>`;
+ document.querySelectorAll('.theme-btn').forEach(b=>b.onclick=()=>{dd=+b.dataset.i;dialShow()})}
+function dialShow(){const d=DIALOGUES[dd];
+ V.innerHTML=`<div class="card" style="text-align:left"><p class="pn" style="font-size:22px;text-align:center">${d.title}</p><p class="small">${d.situation}</p>
+ ${d.lines.map(l=>`<p style="margin:10px 0"><b>${l[0]}:</b> <span style="font:600 22px 'Noto Naskh Arabic',serif" dir="rtl">${l[1]}</span><br><span class="small">${l[2]} — ${l[3]}</span></p>`).join('')}
+ <button class="wide pri" id="go" style="width:100%;margin-top:8px">Vragen (${d.questions.length})</button>
+ <button class="wide" id="bk" style="width:100%;margin-top:6px">← Terug naar overzicht</button></div>`;
+ $('go').onclick=()=>{dqi=0;dialQ()};$('bk').onclick=dialList}
+function dialQ(){const d=DIALOGUES[dd];if(dqi>=d.questions.length){V.innerHTML=`<div class="card"><p>Klaar met "${d.title}".</p><button class="wide pri" id="bk" style="width:100%">← Terug naar overzicht</button></div>`;$('bk').onclick=dialList;return}
+ const q=d.questions[dqi],k='d'+dd+'-'+dqi;
+ V.innerHTML=`<div class="card"><p class="small">${d.title} · vraag ${dqi+1}/${d.questions.length}</p><p style="font-weight:600">${q.q}</p><div class="opts">${q.opts.map((o,i)=>`<button class="opt ar" data-i="${i}" style="font-size:20px">${o}</button>`).join('')}</div><p class="msg" id="msg"></p><button class="wide pri" id="nx" style="display:none;width:100%;margin-top:8px">Volgende</button></div>`;
+ document.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{const ok=+b.dataset.i===q.ans;grade(k,ok);
+  document.querySelectorAll('.opt').forEach((z,i)=>{z.disabled=true;if(i===q.ans)z.classList.add('good')});if(!ok)b.classList.add('wrong');
+  $('msg').textContent=ok?'Goed!':'Niet helemaal — bekijk het dialoog nog eens.';$('msg').style.color=ok?'var(--ok)':'var(--bad)';$('nx').style.display='block';$('nx').onclick=()=>{dqi++;dialQ()}})}
+
+function pct(items,key,mastered){const n=items.length;if(!n)return 0;
+ const done=items.filter(i=>{const k=key(i);return mastered?(S[k]&&S[k].b>=4):!!S[k]}).length;
+ return Math.round(done/n*100)}
+function gramTotal(){let n=0;GRAMMAR.forEach(g=>n+=g.exercises.length);return n}
+function gramDone(){let n=0;GRAMMAR.forEach((g,gi)=>g.exercises.forEach((e,ei)=>{if(S['g'+gi+'-'+ei])n++}));return n}
+function dialTotal(){let n=0;DIALOGUES.forEach(d=>n+=d.questions.length);return n}
+function dialDone(){let n=0;DIALOGUES.forEach((d,di)=>d.questions.forEach((q,qi)=>{if(S['d'+di+'-'+qi])n++}));return n}
+function padSteps(){return[
+ {label:'1. Letters',sub:'alle 38 letters herkennen',p:pct(L,l=>l.c,true),tab:'learn'},
+ {label:'2. Verbindingsvormen',sub:'begin, midden, eind',p:pct(L,l=>'f'+l.c,true),tab:'forms'},
+ {label:'3. Klinkers & tekens',sub:'zabar, zer, pesh, en meer',p:pct(VW,v=>'v'+v.id,true),tab:'vowels'},
+ {label:'4. Woorden & thema\'s',sub:W.length+' woorden in 8 thema\'s',p:pct(W,w=>'w'+w.w,true),tab:'words'},
+ {label:'5. Zinnen bouwen',sub:Z.length+' zinnen, SOV-volgorde',p:pct(Z,z=>'s'+z.id,true),tab:'sent'},
+ {label:'6. Grammatica',sub:GRAMMAR.length+' modules met oefeningen',p:Math.round(gramDone()/gramTotal()*100),tab:'gram'},
+ {label:'7. Dialogen',sub:DIALOGUES.length+' gesprekken met vragen',p:Math.round(dialDone()/dialTotal()*100),tab:'dial'},
+ {label:'8. Leesteksten',sub:READINGS.length+' teksten met begripsvragen',p:Math.round(readDone()/readTotal()*100),tab:'read'}
+]}
+function pad(){const steps=padSteps();
+ const overall=Math.round(steps.reduce((a,s)=>a+s.p,0)/steps.length);
+ V.innerHTML=`<div class="card" style="text-align:left">
+ <p class="small" style="text-align:center">Totale voortgang: <b>${overall}%</b></p>
+ <div class="bar" style="height:10px;margin-bottom:16px"><i style="width:${overall}%"></i></div>
+ <p class="small">Aanbevolen volgorde — alles blijft los klikbaar, dit is een gids, geen slot.</p>
+ ${steps.map(s=>`<div style="margin:14px 0">
+  <div style="display:flex;justify-content:space-between;align-items:baseline"><b>${s.label}</b><span class="small">${s.p}%</span></div>
+  <div class="small">${s.sub}</div>
+  <div class="bar"><i style="width:${s.p}%"></i></div>
+  <button class="wide" data-tab="${s.tab}" style="width:100%;margin-top:6px">${s.p===0?'Beginnen':s.p>=100?'Herhalen':'Verdergaan'}</button>
+ </div>`).join('')}
+ </div>`;
+ document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>go(b.dataset.tab));
+}
+
+const READINGS=[
+{title:'Kennismaking',level:'Beginner',
+sents:[
+['میرا نام سارہ ہے۔','meraa naam Saarah hai.','Ik heet Sara.'],
+['میں ہالینڈ سے ہوں۔','main Holland se hoon.','Ik kom uit Nederland.'],
+['میں تھوڑا اردو بولتی ہوں۔','main thoRaa Urdu boltii hoon.','Ik spreek een beetje Urdu.'],
+['مجھے چائے پسند ہے۔','mujhe chaaye pasand hai.','Ik hou van thee.'],
+['میرا ایک بھائی اور ایک بہن ہے۔','meraa ek bhaaii aur ek behen hai.','Ik heb een broer en een zus.'],
+['ہم ایک گھر میں رہتے ہیں۔','hum ek ghar mein rahte hain.','Wij wonen in één huis.']],
+questions:[
+{q:'Waar komt Sara vandaan?',opts:['Pakistan','Nederland','India','Engeland'],ans:1},
+{q:'Wat drinkt Sara graag?',opts:['Koffie','Water','Thee','Melk'],ans:2},
+{q:'Hoeveel broers en zussen heeft ze?',opts:['Geen','1 broer en 1 zus','2 broers','Alleen 1 zus'],ans:1}]},
+{title:'Een dag van Ahmad',level:'Gemiddeld',
+sents:[
+['احمد ہر روز صبح جلدی اٹھتا ہے۔','Ahmad har roz subah jaldii uThtaa hai.','Ahmad staat elke dag vroeg op.'],
+['وہ ناشتے میں روٹی اور چائے لیتا ہے۔','vo naashte mein roTii aur chaaye letaa hai.','Hij neemt brood en thee als ontbijt.'],
+['پھر وہ دفتر جاتا ہے۔','phir vo daftar jaataa hai.','Daarna gaat hij naar kantoor.'],
+['دوپہر کو وہ دوستوں کے ساتھ کھانا کھاتا ہے۔','dopahar ko vo doston ke saath khaanaa khaataa hai.','\'s Middags eet hij met vrienden.'],
+['شام کو وہ گھر آتا ہے اور کتاب پڑھتا ہے۔','shaam ko vo ghar aataa hai aur kitaab paRhtaa hai.','\'s Avonds komt hij thuis en leest een boek.'],
+['رات کو وہ جلدی سوتا ہے۔','raat ko vo jaldii sotaa hai.','\'s Nachts gaat hij vroeg slapen.']],
+questions:[
+{q:'Wat eet Ahmad als ontbijt?',opts:['Rijst','Brood en thee','Vlees','Fruit'],ans:1},
+{q:'Met wie eet hij \'s middags?',opts:['Familie','Alleen','Vrienden','Collega\'s'],ans:2},
+{q:'Wat doet hij \'s avonds?',opts:['Werken','Tv kijken','Een boek lezen','Sporten'],ans:2}]},
+{title:'Het weekend',level:'Gevorderd (verleden tijd)',
+sents:[
+['گزشتہ ہفتے میں نے ایک نئی کتاب خریدی۔','guzashtaa hafte main ne ek nayii kitaab khariidii.','Vorige week kocht ik een nieuw boek.'],
+['میں نے دو دن میں پوری کتاب پڑھی۔','main ne do din mein puurii kitaab paRhii.','Ik las het hele boek in twee dagen.'],
+['کہانی بہت دلچسپ تھی۔','kahaanii bahut dilchasp thii.','Het verhaal was heel interessant.'],
+['اتوار کو میں اپنے دوستوں سے ملا۔','itvaar ko main apne doston se milaa.','Op zondag ontmoette ik mijn vrienden.'],
+['ہم نے مل کر چائے پی اور باتیں کیں۔','hum ne mil kar chaaye pii aur baaten kiin.','We dronken samen thee en praatten.'],
+['شام کو بارش ہوئی، اس لیے ہم گھر واپس آئے۔','shaam ko baarish huii, is liye hum ghar vaapas aaye.','\'s Avonds regende het, dus gingen we terug naar huis.']],
+questions:[
+{q:'Wat kocht de verteller?',opts:['Een schrift','Een nieuw boek','Een krant','Een tijdschrift'],ans:1},
+{q:'Hoe lang deed hij erover om het te lezen?',opts:['Eén dag','Twee dagen','Een week','Een maand'],ans:1},
+{q:'Waarom gingen ze terug naar huis?',opts:['Het werd laat','Het regende','Ze waren moe','Het werd koud'],ans:1}]}
+];
+let rd=null,rqi=0;
+function readList(){V.innerHTML=`<div class="card"><p class="small">${READINGS.length} leesteksten — kies er een</p><div class="row" style="flex-wrap:wrap;gap:8px">${READINGS.map((r,i)=>`<button class="theme-btn" data-i="${i}" style="flex:1 1 100%;text-align:left">${i+1}. ${r.title} <span class="small">(${r.level})</span></button>`).join('')}</div></div>`;
+ document.querySelectorAll('.theme-btn').forEach(b=>b.onclick=()=>{rd=+b.dataset.i;readShow()})}
+function readShow(){const r=READINGS[rd];
+ V.innerHTML=`<div class="card" style="text-align:left"><p class="pn" style="font-size:22px;text-align:center">${r.title}</p><p class="small" style="text-align:center">${r.level}</p>
+ <div style="font:600 24px 'Noto Naskh Arabic',serif;line-height:2.3;direction:rtl;margin:10px 0" dir="rtl">${r.sents.map((s,i)=>`<span class="tglSent" data-i="${i}" style="cursor:pointer;border-bottom:1px dotted var(--acc)">${s[0]}</span> `).join('')}</div>
+ <div id="trBox" class="small" style="min-height:20px">Tik op een zin voor uitspraak en vertaling.</div>
+ <button class="wide pri" id="go" style="width:100%;margin-top:10px">Begripsvragen (${r.questions.length})</button>
+ <button class="wide" id="bk" style="width:100%;margin-top:6px">← Terug naar overzicht</button></div>`;
+ document.querySelectorAll('.tglSent').forEach(sp=>sp.onclick=()=>{const s=r.sents[+sp.dataset.i];$('trBox').innerHTML=`<b>${s[1]}</b><br>${s[2]}`});
+ $('go').onclick=()=>{rqi=0;readQ()};$('bk').onclick=readList}
+function readQ(){const r=READINGS[rd];if(rqi>=r.questions.length){V.innerHTML=`<div class="card"><p>Klaar met "${r.title}".</p><button class="wide pri" id="bk" style="width:100%">← Terug naar overzicht</button></div>`;$('bk').onclick=readList;return}
+ const q=r.questions[rqi],k='r'+rd+'-'+rqi;
+ V.innerHTML=`<div class="card"><p class="small">${r.title} · vraag ${rqi+1}/${r.questions.length}</p><p style="font-weight:600">${q.q}</p><div class="opts">${q.opts.map((o,i)=>`<button class="opt" data-i="${i}" style="font-size:17px">${o}</button>`).join('')}</div><p class="msg" id="msg"></p><button class="wide pri" id="nx" style="display:none;width:100%;margin-top:8px">Volgende</button></div>`;
+ document.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{const ok=+b.dataset.i===q.ans;grade(k,ok);
+  document.querySelectorAll('.opt').forEach((z,i)=>{z.disabled=true;if(i===q.ans)z.classList.add('good')});if(!ok)b.classList.add('wrong');
+  $('msg').textContent=ok?'Goed!':'Niet helemaal — lees de tekst nog eens.';$('msg').style.color=ok?'var(--ok)':'var(--bad)';$('nx').style.display='block';$('nx').onclick=()=>{rqi++;readQ()}})}
+function readTotal(){let n=0;READINGS.forEach(r=>n+=r.questions.length);return n}
+function readDone(){let n=0;READINGS.forEach((r,ri)=>r.questions.forEach((q,qi)=>{if(S['r'+ri+'-'+qi])n++}));return n}
+
+function prog(){const now=Date.now(),seen=L.filter(l=>S[l.c]).length,m=L.filter(l=>S[l.c]&&S[l.c].b>=4).length,due=L.filter(l=>S[l.c]&&S[l.c].d<=now).length;
+ V.innerHTML=`<p><b>${seen}</b> van ${L.length} letters gezien · <b>${m}</b> beheerst<br><span class="small">Vandaag: ${M.day===fmt(new Date())?M.n:0} antwoorden · reeks: ${M.streak||0} dagen · nu te herhalen: ${due} · woorden: ${W.filter(i=>S["w"+i.w]).length}/${W.length} · klinkers: ${VW.filter(i=>S["v"+i.id]).length}/${VW.length} · zinnen: ${Z.filter(i=>S["s"+i.id]).length}/${Z.length}</span></p>
+ <div class="grid">${L.map(l=>`<div class="cell" style="opacity:${S[l.c]?1:.4}"><div class="ar">${l.c}</div><div class="small">${l.n}</div><div class="bar"><i style="width:${S[l.c]?S[l.c].b*20:0}%"></i></div></div>`).join('')}</div>
+ <p class="small"><b>Waarom dit werkt:</b> je haalt letters uit je geheugen in plaats van ze alleen te bekijken (retrieval practice). Letters komen terug op steeds langere afstand (spaced repetition: 10 min, 1, 3, 7, 16 dagen). Een fout zet de letter terug naar het begin. Vragen wisselen door elkaar (interleaving), en lijkende letters staan in de quiz bij elkaar om verwarring te trainen. Zelf schrijven versterkt de herinnering aan de vorm.</p>
+ <button class="wide" id="rs">Voortgang wissen</button>`;
+ $('rs').onclick=()=>{if(confirm('Alle voortgang wissen?')){S={};M={};save();prog()}}}
+
+const go=t=>{document.querySelectorAll('nav button').forEach(b=>b.setAttribute('aria-selected',b.dataset.t===t));({pad,learn,quiz,write,forms,vowels,words,sent,themes:themePick,gram:gramList,dial:dialList,read:readList,prog})[t]()};
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>go(b.dataset.t));
+if('speechSynthesis' in window)speechSynthesis.onvoiceschanged=()=>{};
+go('pad');
+</script>
+</body>
+</html>
